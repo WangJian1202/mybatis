@@ -151,14 +151,17 @@ public class UserMapperTest extends BaseMapperTest {
 			user.setUserInfo("test info");
 			user.setHeadImg(new byte[]{1,2,3});
 			user.setCreateTime(new Date());
-			int result = userMapper.insert2(user);
+			int result = userMapper.insert3(user);
+			System.out.println(result);
+			System.out.println(user.getId());
 			//只插入 1 条数据
 			Assert.assertEquals(1, result);
 			//因为 id 回写，所以 id 不为 null
 			Assert.assertNotNull(user.getId());
 			
 		} finally {
-			sqlSession.commit();
+//			sqlSession.commit();
+			sqlSession.rollback();
 			//不要忘记关闭 sqlSession
 			sqlSession.close();
 		}

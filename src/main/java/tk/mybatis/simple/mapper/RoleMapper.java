@@ -18,7 +18,7 @@ import tk.mybatis.simple.model.SysRole;
 
 @CacheNamespaceRef(RoleMapper.class)
 public interface RoleMapper {
-	
+//	使用注解的优点：对于需求简单的系统，效率较高，缺点：当sql有变化时，需要重新编译代码
 	@Select({"select id,role_name roleName, enabled, create_by createBy, create_time createTime",
 			 "from sys_role",
 			 "where id = #{id}"})

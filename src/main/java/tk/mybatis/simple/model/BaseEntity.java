@@ -1,6 +1,7 @@
 package tk.mybatis.simple.model;
 
 public class BaseEntity {
+
 	private Long id;
 
 	public Long getId() {

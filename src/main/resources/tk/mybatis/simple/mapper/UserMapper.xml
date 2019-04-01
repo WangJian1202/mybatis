@@ -59,7 +59,9 @@
 	<select id="selectById" resultMap="userMap">
 		select * from sys_user where id = #{id}
 	</select>
-	
+
+	<!--以下在mybatris-conf.xml中配置settings mapUnderscoreToCameCase 可以不用设置别名，自动配置-->
+
 	<select id="selectAll" resultType="tk.mybatis.simple.model.SysUser">
 	    select id, 
 	    	user_name userName, 
@@ -70,7 +72,7 @@
 	        create_time createTime
 	    from sys_user
 	</select>
-	
+	<!--通过在SysRole 对象中添加User属性将查询到的userName,userEmail赋值给user字段的属性-->
 	<select id="selectRolesByUserId" resultType="tk.mybatis.simple.model.SysRole">
 	    select 
 			r.id, 
@@ -96,6 +98,7 @@
 		from sys_user u
 		inner join sys_user_role ur on u.id = ur.user_id
 		inner join sys_role r on ur.role_id = r.id
+-- 		这里讲#{userId} #{enabled} 改为#{0}，#{1} 或#{param1}，#{param2}接口不加@param也可，但不建议
 	    where u.id = #{userId} and r.enabled = #{enabled}
 	</select>
 	
@@ -109,6 +112,7 @@
 		from sys_user u
 		inner join sys_user_role ur on u.id = ur.user_id
 		inner join sys_role r on ur.role_id = r.id
+-- 		接口参数为JavaBean类型的，需要以这种点取得方式获得
 	    where u.id = #{user.id} and r.enabled = #{role.enabled}
 	</select>
 	
@@ -118,9 +122,10 @@
 			user_info, head_img, create_time)
 		values(
 			#{userName}, #{userPassword}, #{userEmail}, 
-			#{userInfo}, #{headImg, jdbcType=BLOB}, #{createTime,jdbcType=TIMESTAMP} )
+			#{userInfo}, #{headImg, jdbcType=BLOB}, #{createTime,jdbcType=TIMESTAMP})
 	</insert>
-	
+	<!--useGeneratedKeys 设置为true后，Mybatis会使用JDBC的getGeneratedKeys方法来取出数据库内部生成的主键，
+	获取主键后将值赋给keyProperty配置的id属性，当设置多个属性时，使用逗号隔开，主要用于支持主键自增的数据库-->
 	<insert id="insert2" useGeneratedKeys="true" keyProperty="id">
 		insert into sys_user(
 			user_name, user_password, 
@@ -139,7 +144,8 @@
 			</if>
 			#{userInfo}, #{headImg, jdbcType=BLOB}, #{createTime, jdbcType=TIMESTAMP})
 	</insert>
-	
+	<!--selectKey 标签的keyColumn，keyProperty 和上面usegeneratedKey含义相同，这里resultType用于设置返回值类型，mysql数据库中order设置为after，Oracle数据库中
+	order的值设置为BEFORE，因为Oracle数据库需要先从序列获取值，然后将值作为主键插入到数据库中-->
 	<insert id="insert3">
 		insert into sys_user(
 			user_name, user_password, user_email, 
@@ -152,7 +158,12 @@
 		</selectKey>
 	</insert>
 	
-	<!-- Oracle 的例子，查询多个列的时候需要 keyColumn -->
+	<!-- Oracle 的例子，查询多个列的时候需要 keyColumn，必须指定id列，否则会抛异常 -->
+	<!--支持主键自增常见的数据库配置selectKey中回写主键SQL：
+	1.DB2 VALUES IDENTITY_VAL_LOCAL()
+	2.SELECT LAST_INSETRT_ID()
+	3.SQLSERVER SELECT IDENTITY()
+	4.CLOUDSCAPE VALUES IDENTITY_VAL_LOCAL()-->
 	<insert id="insertOracle">
 		<selectKey keyColumn="id" resultType="long" keyProperty="id" order="BEFORE">
 			SELECT SEQ_USER.nextval from dual
@@ -179,7 +190,7 @@
 	<delete id="deleteById">
 		delete from sys_user where id = #{id}
 	</delete>
-	
+	<!--where 标签的作用：如果该标签包含元素中有返回值，就插入一个where;如果where后面字符串是以and 或 or 开头的，就干掉它们-->
 	<select id="selectByUser" resultType="tk.mybatis.simple.model.SysUser">
 		<bind name="print" value="@tk.mybatis.util.StringUtil@print(_parameter)"/>
 	    select id, 
@@ -199,7 +210,18 @@
 		    </if>
 	    </where>
 	</select>
-	
+	<!--set标签的作用：如果该标签中包含的元素中有返回值，就插入一个set;如果后面的字符串是以逗号结尾的，
+	就将这个逗号剔除-->
+	<!--where 和 set的功能都能用trim实现，并且底层都是通过TrimSqlNode实现的：
+	where 变迁trim实现如下：
+	<trim prefix="WHERE" prefixOverrides="AND | OR "> ...</trim> 注意这里AND 和 OR 后面都有空格，不能省略
+	set 标签的trim实现:
+	<trim prefix="SET" suffixOverrides="," >...</ trim>
+	prefix ：当 trim 元素内包含内容时，会给内容增加 prefix 指定的前缀。
+	prefixOverrides ：当 trim 元素内包含内容时，会把内容中匹配的前缀字符串去掉。
+	suffix ：当 trim 元素内包含内容时，会给内容增加 suffix 指定的后缀。
+	suffixOverrides ：当 trim 元素内包含内容时，会把内容中匹配的后缀字符串去掉。
+	-->
 	<update id="updateByIdSelective">
 	<bind name="print" value="@tk.mybatis.util.StringUtil@print(_parameter)"/>
 		update sys_user 
