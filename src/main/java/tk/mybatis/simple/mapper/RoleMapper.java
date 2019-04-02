@@ -15,7 +15,7 @@ import org.apache.ibatis.annotations.Update;
 import org.apache.ibatis.session.RowBounds;
 
 import tk.mybatis.simple.model.SysRole;
-
+//注解方式开启二级缓存
 @CacheNamespaceRef(RoleMapper.class)
 public interface RoleMapper {
 //	使用注解的优点：对于需求简单的系统，效率较高，缺点：当sql有变化时，需要重新编译代码

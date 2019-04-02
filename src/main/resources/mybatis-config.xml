@@ -5,6 +5,7 @@
 <configuration>
 	<settings>
 	    <setting name="logImpl" value="LOG4J"/>
+        <!--mybatis开启二级缓存全局开关-->
 	    <setting name="cacheEnabled" value="true"/>
 	    <setting name="mapUnderscoreToCamelCase" value="true"/>
 	    <setting name="aggressiveLazyLoading" value="false"/>
